@@ -1,0 +1,12 @@
+{
+  "hostname": "myhost.dynu.net",
+  "password": "your-password-or-hash",
+  "password_hash": "none",
+  "interval": 300,
+  "use_ipv4": true,
+  "use_ipv6": false,
+  "state_file": "data/gddynu-state.json",
+  "log_file": "data/gddynu.jsonl",
+  "endpoint": "https://api.dynu.com/nic/update",
+  "http_timeout": 15.0
+}

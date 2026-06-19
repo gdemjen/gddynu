@@ -26,6 +26,22 @@ def test_env_overrides_file(tmp_path):
     assert cfg.use_ipv6 is True
 
 
+def test_load_from_json(tmp_path):
+    p = tmp_path / "gddynu.json"
+    p.write_text('{"hostname": "h.dynu.net", "password": "secret", "interval": 120}',
+                 encoding="utf-8")
+    cfg = load_config(p, env={})
+    assert cfg.hostname == "h.dynu.net"
+    assert cfg.interval == 120
+
+
+def test_invalid_json_raises(tmp_path):
+    p = tmp_path / "gddynu.json"
+    p.write_text("{ not json", encoding="utf-8")
+    with pytest.raises(ConfigError):
+        load_config(p, env={})
+
+
 def test_env_only_no_file():
     env = {"GDDYNU_HOSTNAME": "h.dynu.net", "GDDYNU_PASSWORD": "x"}
     cfg = load_config(None, env=env)

@@ -22,7 +22,11 @@ Each cycle gddynu:
 
 ## Requirements
 
-- Python **3.11+** (uses the stdlib `tomllib`). No third-party runtime dependencies.
+- Python **3.8+**. No third-party runtime dependencies.
+- A config file is optional — you can configure entirely via `GDDYNU_*` env vars.
+  For a file, **JSON works on any Python**; **TOML** needs Python 3.11+ (stdlib
+  `tomllib`) or the `tomli` backport. On a Synology DiskStation (bundled Python
+  ~3.8) prefer a `.json` config.
 
 ## Install
 
@@ -34,9 +38,11 @@ python -m gddynu --help
 
 ## Configure
 
-Copy [`config.example.toml`](config.example.toml) to `gddynu.toml` and edit it.
-Any field can be overridden by a `GDDYNU_<UPPERCASE>` environment variable — handy
-for containers and for keeping secrets out of files:
+Copy [`config.example.toml`](config.example.toml) to `gddynu.toml`, **or**
+[`config.example.json`](config.example.json) to `gddynu.json`, and edit it. The
+format is picked by file extension. Any field can be overridden by a
+`GDDYNU_<UPPERCASE>` environment variable — handy for containers and for keeping
+secrets out of files:
 
 | Setting | Env var | Default |
 |---|---|---|
@@ -81,7 +87,32 @@ is the Dynu response code (e.g. `good`, `nochg`) or an error string.
 
 ## Synology NAS
 
-### Option A — Docker (recommended, daemon mode)
+> **Which method?** Container Manager (Docker) is only available on **x86** Synology
+> models (e.g. DS423**+**). **ARM models such as the DS423 (Realtek RTD1619B) cannot
+> run Docker** — use the Task Scheduler method below instead.
+
+### Option A — DSM Task Scheduler (works on every model, incl. ARM)
+
+The bundled DSM Python is ~3.8, so use a **JSON** config (no parser needed).
+
+1. Put the `src/gddynu/` package folder and a `gddynu.json` in a shared folder,
+   e.g. `/volume1/docker/gddynu` (any folder works). Point `state_file` /
+   `log_file` at that folder, e.g. `/volume1/docker/gddynu/data/...`.
+2. **Control Panel → Task Scheduler → Create → Scheduled Task → User-defined
+   script.** On the **Schedule** tab pick e.g. *Daily, repeat every 5 minutes*.
+3. On the **Task Settings** tab, run:
+
+   ```bash
+   cd /volume1/docker/gddynu && /usr/local/bin/python3 -m gddynu --config gddynu.json
+   ```
+
+   `python3` may live at `/usr/local/bin/python3` (Package Center Python3) or
+   `/usr/bin/python3`; run `which python3` in an SSH session to confirm.
+
+Each run detects the IP, appends to the JSONL log, and updates Dynu only on a
+change. The Task Scheduler handles the scheduling, so you don't need `--daemon`.
+
+### Option B — Docker (x86 / "+" models only)
 
 1. Copy the project to your NAS (or build the image elsewhere and push it).
 2. Edit [`docker-compose.yml`](docker-compose.yml) with your hostname; set
@@ -93,18 +124,6 @@ is the Dynu response code (e.g. `good`, `nochg`) or an error string.
    ```
 
 State and the IP log persist in the mounted `./data` volume.
-
-### Option B — DSM Task Scheduler (one-shot)
-
-1. Put the package and a `gddynu.toml` in a shared folder, e.g. `/volume1/gddynu`.
-2. **Control Panel → Task Scheduler → Create → Scheduled Task → User-defined script**,
-   run e.g. every 5 minutes:
-
-   ```bash
-   cd /volume1/gddynu && /usr/bin/python3 -m gddynu --config gddynu.toml
-   ```
-
-   (Ensure the NAS Python is 3.11+; otherwise prefer the Docker option.)
 
 ## Development
 

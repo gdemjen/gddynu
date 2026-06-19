@@ -7,7 +7,9 @@ name = "gddynu"
 version = "0.1.0"
 description = "Dynamic DNS updater for Dynu.com with IP change logging, Synology-friendly"
 readme = "README.md"
-requires-python = ">=3.11"
+# 3.8+ so it runs on the Python bundled with Synology DSM. TOML config needs
+# 3.11+ or the optional 'tomli' backport; JSON config works everywhere.
+requires-python = ">=3.8"
 license = { text = "GPL-3.0-or-later" }
 authors = [{ name = "gdemjen" }]
 keywords = ["dynu", "dynamic-dns", "ddns", "synology"]

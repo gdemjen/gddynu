@@ -1,13 +1,18 @@
 """Configuration loading and validation.
 
-A TOML file provides the base configuration; environment variables prefixed
-with ``GDDYNU_`` override individual fields (handy for Docker / Synology).
+A config file (TOML or JSON) provides the base configuration; environment
+variables prefixed with ``GDDYNU_`` override individual fields (handy for Docker
+and the Synology Task Scheduler).
+
+TOML needs Python 3.11+ (stdlib ``tomllib``) or the ``tomli`` backport. JSON
+works on any Python and needs no parser — preferred where you can't control the
+Python version (e.g. the bundled Python on a Synology DiskStation).
 """
 
 from __future__ import annotations
 
+import json
 import os
-import tomllib
 from dataclasses import dataclass, field, fields
 from pathlib import Path
 
@@ -105,21 +110,45 @@ _ENV_FIELDS: dict[str, tuple[str, object]] = {
 }
 
 
-def load_config(path: str | os.PathLike[str] | None, env: dict[str, str] | None = None) -> Config:
-    """Load configuration from a TOML file, then apply ``GDDYNU_*`` env overrides.
+def _load_toml(p: Path) -> dict:
+    try:
+        import tomllib  # Python 3.11+
+    except ModuleNotFoundError:
+        try:
+            import tomli as tomllib  # backport for 3.8–3.10
+        except ModuleNotFoundError as exc:
+            raise ConfigError(
+                f"Reading the TOML config {p} needs Python 3.11+ or the 'tomli' "
+                "package. On older Python (e.g. a Synology DiskStation) use a "
+                ".json config file instead, or configure via GDDYNU_* env vars."
+            ) from exc
+    with p.open("rb") as fh:
+        return tomllib.load(fh)
 
-    The TOML file is optional when every required field is supplied via the
-    environment (the typical Docker case).
+
+def _load_file(p: Path) -> dict:
+    if not p.is_file():
+        raise ConfigError(f"Config file not found: {p}")
+    if p.suffix.lower() == ".json":
+        try:
+            # utf-8-sig tolerates a BOM (common when edited on Windows).
+            return json.loads(p.read_text(encoding="utf-8-sig"))
+        except json.JSONDecodeError as exc:
+            raise ConfigError(f"Invalid JSON in {p}: {exc}") from exc
+    return _load_toml(p)
+
+
+def load_config(path: str | os.PathLike[str] | None, env: dict[str, str] | None = None) -> Config:
+    """Load configuration from a TOML/JSON file, then apply ``GDDYNU_*`` overrides.
+
+    The file is optional when every required field is supplied via the
+    environment (the typical Docker / env-only case).
     """
     env = dict(os.environ if env is None else env)
     data: dict = {}
 
     if path is not None:
-        p = Path(path)
-        if not p.is_file():
-            raise ConfigError(f"Config file not found: {p}")
-        with p.open("rb") as fh:
-            data = tomllib.load(fh)
+        data = _load_file(Path(path))
 
     valid_names = {f.name for f in fields(Config)}
     unknown = set(data) - valid_names
