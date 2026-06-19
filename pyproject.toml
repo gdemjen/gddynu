@@ -1,0 +1,36 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "gddynu"
+version = "0.1.0"
+description = "Dynamic DNS updater for Dynu.com with IP change logging, Synology-friendly"
+readme = "README.md"
+requires-python = ">=3.11"
+license = { text = "GPL-3.0-or-later" }
+authors = [{ name = "gdemjen" }]
+keywords = ["dynu", "dynamic-dns", "ddns", "synology"]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)",
+    "Operating System :: OS Independent",
+    "Topic :: Internet :: Name Service (DNS)",
+]
+# No runtime dependencies: stdlib only (urllib, tomllib, logging, signal).
+dependencies = []
+
+[project.optional-dependencies]
+dev = ["pytest>=7.0"]
+
+[project.urls]
+Homepage = "https://github.com/gddynu/gddynu"
+
+[project.scripts]
+gddynu = "gddynu.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

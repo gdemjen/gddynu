@@ -1,0 +1,38 @@
+# gddynu configuration. Copy to gddynu.toml and edit.
+# Any field can be overridden by a GDDYNU_<UPPERCASE> environment variable,
+# e.g. GDDYNU_PASSWORD, GDDYNU_HOSTNAME, GDDYNU_INTERVAL.
+
+# Hostname(s) to update. Comma-separated for multiple (max 20).
+hostname = "myhost.dynu.net"
+
+# Optional: a username updates all ungrouped hostnames on the account.
+# username = "myuser"
+
+# Password. Either plaintext, or a hash matching `password_hash` below.
+# Prefer setting this via the GDDYNU_PASSWORD env var rather than in the file.
+password = "your-password-or-hash"
+
+# How `password` is sent: "none" (plaintext), "md5", or "sha256".
+password_hash = "none"
+
+# Daemon poll interval in seconds.
+interval = 300
+
+# Which address families to manage.
+use_ipv4 = true
+use_ipv6 = false
+
+# Where to persist last-known IP and the JSONL change log.
+state_file = "data/gddynu-state.json"
+log_file = "data/gddynu.jsonl"
+
+# Dynu update endpoint (rarely needs changing).
+endpoint = "https://api.dynu.com/nic/update"
+
+# HTTP timeout in seconds for IP detection and Dynu requests.
+http_timeout = 15.0
+
+# Public-IP detection service chains (tried in order). Defaults are sensible;
+# override only if you want different providers.
+# ip_services_v4 = ["https://api.ipify.org", "https://ipv4.icanhazip.com"]
+# ip_services_v6 = ["https://api64.ipify.org", "https://ipv6.icanhazip.com"]

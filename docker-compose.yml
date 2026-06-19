@@ -1,0 +1,18 @@
+services:
+  gddynu:
+    build: .
+    image: gddynu:latest
+    container_name: gddynu
+    restart: unless-stopped
+    environment:
+      GDDYNU_HOSTNAME: "myhost.dynu.net"
+      # Set secrets via your Synology container env / a .env file, not in git.
+      GDDYNU_PASSWORD: "${GDDYNU_PASSWORD}"
+      GDDYNU_PASSWORD_HASH: "none"
+      GDDYNU_INTERVAL: "300"
+      GDDYNU_USE_IPV4: "true"
+      GDDYNU_USE_IPV6: "false"
+    volumes:
+      # Keeps the state file and the JSONL IP log across restarts.
+      - ./data:/data
+    command: ["--daemon"]
