@@ -13,7 +13,7 @@ RUN pip install --no-cache-dir .
 
 # Persist state + IP log here; mount a volume to keep them across restarts.
 ENV GDDYNU_STATE_FILE=/data/gddynu-state.json \
-    GDDYNU_LOG_FILE=/data/gddynu.jsonl
+    GDDYNU_LOG_FILE=/data/gddynu-logs.jsonl
 VOLUME ["/data"]
 
 # Daemon mode by default. Configure via GDDYNU_* env vars (see README), or mount

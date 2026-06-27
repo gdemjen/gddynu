@@ -76,6 +76,7 @@ def run_once(config: Config, *, dry_run: bool = False) -> CycleResult:
         st.ipv6 = ipv6 if config.use_ipv6 else st.ipv6
         st.updated_at = datetime.now(timezone.utc).isoformat()
         state.save_state(config.state_file, st)
+        iplog.append_history(config.history_file, ipv4=st.ipv4, ipv6=st.ipv6)
         log.info("Dynu: %s (%s)", result.code, result.message)
     else:
         log.error("Dynu: %s (%s)", result.code, result.message)

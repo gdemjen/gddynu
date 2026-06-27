@@ -22,9 +22,10 @@ interval = 300
 use_ipv4 = true
 use_ipv6 = false
 
-# Where to persist last-known IP and the JSONL change log.
+# Where to persist last-known IP, the JSONL change log, and the IP history.
 state_file = "data/gddynu-state.json"
-log_file = "data/gddynu.jsonl"
+log_file = "data/gddynu-logs.jsonl"
+history_file = "data/gddynu-history.jsonl"
 
 # Dynu update endpoint (rarely needs changing).
 endpoint = "https://api.dynu.com/nic/update"

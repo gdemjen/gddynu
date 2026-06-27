@@ -54,3 +54,17 @@ def append_record(
     with p.open("a", encoding="utf-8") as fh:
         fh.write(json.dumps(record, ensure_ascii=False) + "\n")
     return record
+
+
+def append_history(
+    path: str | os.PathLike[str],
+    *,
+    ipv4: str | None,
+    ipv6: str | None,
+) -> None:
+    """Append one record to the IP history file when an address change is confirmed."""
+    record = {"ts": _now_iso(), "ipv4": ipv4, "ipv6": ipv6}
+    p = Path(path)
+    p.parent.mkdir(parents=True, exist_ok=True)
+    with p.open("a", encoding="utf-8") as fh:
+        fh.write(json.dumps(record, ensure_ascii=False) + "\n")

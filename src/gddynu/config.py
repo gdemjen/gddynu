@@ -56,7 +56,8 @@ class Config:
 
     # --- files ---
     state_file: str = "gddynu-state.json"
-    log_file: str = "gddynu.jsonl"
+    log_file: str = "gddynu-logs.jsonl"
+    history_file: str = "gddynu-history.jsonl"
 
     # --- IP detection ---
     ip_services_v4: list[str] = field(default_factory=lambda: list(DEFAULT_IP_SERVICES_V4))
@@ -105,6 +106,7 @@ _ENV_FIELDS: dict[str, tuple[str, object]] = {
     "GDDYNU_HTTP_TIMEOUT": ("http_timeout", float),
     "GDDYNU_STATE_FILE": ("state_file", str),
     "GDDYNU_LOG_FILE": ("log_file", str),
+    "GDDYNU_HISTORY_FILE": ("history_file", str),
     "GDDYNU_IP_SERVICES_V4": ("ip_services_v4", _as_list),
     "GDDYNU_IP_SERVICES_V6": ("ip_services_v6", _as_list),
 }

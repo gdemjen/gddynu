@@ -53,7 +53,8 @@ secrets out of files:
 | `interval` | `GDDYNU_INTERVAL` | `300` |
 | `use_ipv4` / `use_ipv6` | `GDDYNU_USE_IPV4` / `GDDYNU_USE_IPV6` | `true` / `false` |
 | `state_file` | `GDDYNU_STATE_FILE` | `gddynu-state.json` |
-| `log_file` | `GDDYNU_LOG_FILE` | `gddynu.jsonl` |
+| `log_file` | `GDDYNU_LOG_FILE` | `gddynu-logs.jsonl` |
+| `history_file` | `GDDYNU_HISTORY_FILE` | `gddynu-history.jsonl` |
 
 The `password` may be plaintext or a hash; set `password_hash` to `md5`/`sha256`
 to send it hashed. Secrets are masked in logs and never written to the IP log.

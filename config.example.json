@@ -6,7 +6,8 @@
   "use_ipv4": true,
   "use_ipv6": false,
   "state_file": "data/gddynu-state.json",
-  "log_file": "data/gddynu.jsonl",
+  "log_file": "data/gddynu-logs.jsonl",
+  "history_file": "data/gddynu-history.jsonl",
   "endpoint": "https://api.dynu.com/nic/update",
   "http_timeout": 15.0
 }
