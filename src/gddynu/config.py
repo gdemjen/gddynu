@@ -63,6 +63,12 @@ class Config:
     ip_services_v4: list[str] = field(default_factory=lambda: list(DEFAULT_IP_SERVICES_V4))
     ip_services_v6: list[str] = field(default_factory=lambda: list(DEFAULT_IP_SERVICES_V6))
 
+    # --- web UI ---
+    web_username: str = ""
+    web_password: str = ""
+    web_port: int = 8080
+    web_host: str = "0.0.0.0"
+
     def masked_password(self) -> str:
         """A log-safe representation of the password."""
         if not self.password:
@@ -109,6 +115,10 @@ _ENV_FIELDS: dict[str, tuple[str, object]] = {
     "GDDYNU_HISTORY_FILE": ("history_file", str),
     "GDDYNU_IP_SERVICES_V4": ("ip_services_v4", _as_list),
     "GDDYNU_IP_SERVICES_V6": ("ip_services_v6", _as_list),
+    "GDDYNU_WEB_USERNAME": ("web_username", str),
+    "GDDYNU_WEB_PASSWORD": ("web_password", str),
+    "GDDYNU_WEB_PORT": ("web_port", int),
+    "GDDYNU_WEB_HOST": ("web_host", str),
 }
 
 

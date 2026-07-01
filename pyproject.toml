@@ -30,6 +30,7 @@ Homepage = "https://github.com/gddynu/gddynu"
 
 [project.scripts]
 gddynu = "gddynu.cli:main"
+gddynu-web = "gddynu.cli:web_main"
 
 [tool.setuptools.packages.find]
 where = ["src"]
