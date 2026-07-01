@@ -3,11 +3,13 @@
 A dynamic DNS updater for [Dynu.com](https://www.dynu.com), implementing the
 [Dynu IP Update Protocol](https://www.dynu.com/en-US/DynamicDNS/IP-Update-Protocol).
 
-It does what the stock Dynu client does, plus two extras:
+It does what the stock Dynu client does, plus three extras:
 
 1. **IP change log** — every detected public IP and every update is appended to a
    machine-readable JSONL file, so you can track when and how your address changed.
-2. **Runs on Synology NAS** — a single zero-dependency Python package and a Docker
+2. **Web UI** — a built-in HTTP server that displays the IP history as a browsable
+   table, protected by a simple username/password login.
+3. **Runs on Synology NAS** — a single zero-dependency Python package and a Docker
    image; run it in Container Manager (Docker) or from the DSM Task Scheduler.
 
 ## How it works
@@ -55,6 +57,10 @@ secrets out of files:
 | `state_file` | `GDDYNU_STATE_FILE` | `gddynu-state.json` |
 | `log_file` | `GDDYNU_LOG_FILE` | `gddynu-logs.jsonl` |
 | `history_file` | `GDDYNU_HISTORY_FILE` | `gddynu-history.jsonl` |
+| `web_username` | `GDDYNU_WEB_USERNAME` | — (required for web UI) |
+| `web_password` | `GDDYNU_WEB_PASSWORD` | — (required for web UI) |
+| `web_port` | `GDDYNU_WEB_PORT` | `8080` |
+| `web_host` | `GDDYNU_WEB_HOST` | `0.0.0.0` |
 
 The `password` may be plaintext or a hash; set `password_hash` to `md5`/`sha256`
 to send it hashed. Secrets are masked in logs and never written to the IP log.
@@ -74,6 +80,26 @@ gddynu --config gddynu.toml --daemon --interval 300
 
 Exit codes: `0` success / no change, `1` configuration or fatal account error,
 `2` transient error (safe to retry).
+
+### Web UI
+
+Add `web_username` and `web_password` to your config file, then start the server:
+
+```bash
+# Dedicated command:
+gddynu-web --config gddynu.json
+
+# Or via the main command:
+gddynu --config gddynu.json --web
+```
+
+The server listens on port `8080` by default. Open `http://localhost:8080/` in a
+browser — you will be redirected to a login page. After a successful login, you
+see the full IP history table (newest entry first) with colour-coded rows:
+green = IP changed, red = error. Sessions last 8 hours.
+
+> The server speaks plain HTTP. Put it behind a reverse proxy (nginx, Synology
+> Application Portal) to get HTTPS.
 
 ### The IP log
 
@@ -99,19 +125,52 @@ The bundled DSM Python is ~3.8, so use a **JSON** config (no parser needed).
 1. Put the `src/gddynu/` package folder and a `gddynu.json` in a shared folder,
    e.g. `/volume1/docker/gddynu` (any folder works). Point `state_file` /
    `log_file` at that folder, e.g. `/volume1/docker/gddynu/data/...`.
-2. **Control Panel → Task Scheduler → Create → Scheduled Task → User-defined
-   script.** On the **Schedule** tab pick e.g. *Daily, repeat every 5 minutes*.
-3. On the **Task Settings** tab, run:
+2. Add `web_username` and `web_password` to `gddynu.json`.
 
-   ```bash
-   cd /volume1/docker/gddynu && /usr/local/bin/python3 -m gddynu --config gddynu.json
-   ```
+#### DNS updater task
 
-   `python3` may live at `/usr/local/bin/python3` (Package Center Python3) or
-   `/usr/bin/python3`; run `which python3` in an SSH session to confirm.
+**Control Panel → Task Scheduler → Create → Scheduled Task → User-defined
+script.** On the **Schedule** tab pick e.g. *Daily, repeat every 5 minutes*.
+On the **Task Settings** tab, run:
+
+```bash
+cd /volume1/docker/gddynu && /usr/local/bin/python3 -m gddynu --config gddynu.json
+```
+
+`python3` may live at `/usr/local/bin/python3` (Package Center Python3) or
+`/usr/bin/python3`; run `which python3` in an SSH session to confirm.
 
 Each run detects the IP, appends to the JSONL log, and updates Dynu only on a
 change. The Task Scheduler handles the scheduling, so you don't need `--daemon`.
+
+#### Web UI task
+
+**Control Panel → Task Scheduler → Create → Triggered Task → User-defined
+script.** Set the **Event** to *Boot-up*. On the **Task Settings** tab, run:
+
+```bash
+/usr/local/bin/python3 -m gddynu --config /volume1/docker/gddynu/gddynu.json --web &
+```
+
+The `&` sends the process to the background so the task returns immediately.
+The web server stays running until the next reboot (or until you stop it via
+Task Scheduler → Run/Stop).
+
+#### Reverse proxy for HTTPS (recommended)
+
+**Control Panel → Application Portal → Reverse Proxy → Create:**
+
+| Field | Value |
+|---|---|
+| Source Protocol | HTTPS |
+| Source Hostname | your DDNS hostname (e.g. `demjennas.freeddns.org`) |
+| Source Port | 443 |
+| Destination Protocol | HTTP |
+| Destination Hostname | `localhost` |
+| Destination Port | `8080` |
+
+DSM will terminate TLS with its own certificate (Let's Encrypt or custom),
+so your browser sees HTTPS while gddynu-web only handles plain HTTP internally.
 
 ### Option B — Docker (x86 / "+" models only)
 
